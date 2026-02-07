@@ -34,6 +34,8 @@ if (!roomID) {
 const size = 118;
 const cols = ["A", "B", "C", "D", "E"];
 let myPieceType = (myRole === 'host') ? 'king' : 'pawn';
+const roomDisplayEl = document.getElementById("roomDisplay");
+if(roomDisplayEl) roomDisplayEl.textContent = roomID;
 let isMyTurn = false;
 let currentGameState = null;
 let selectedPos = null;
@@ -71,10 +73,9 @@ if (myRole === 'host') {
 function resetGameOnServer() {
     set(ref(db, `rooms/${roomID}/board`), {
         pawnStacks: { 
-            "A2": 1, "B1": 1, "B3": 1, "C2": 1, "D1": 1, "D3": 1, "E2": 1,
-            "A4": 1, "B5": 1, "C4": 1, "D5": 1, "E4": 1, "A3":1, "E3":1 
+                    "B2": 5, "B4": 5, "D2": 5, "D4": 5,
         },
-        kingPositions: { king1: "C5", king2: "C3" }, 
+        kingPositions: { king1: "C1", king2: "C5" }, 
         currentTurn: 'pawn', 
         movesPlayed: 0,
         winner: null,
@@ -219,12 +220,12 @@ function rotateBoard() {
     // Logic: Agar main KING hu, to board ulta karo taaki main niche rahu
     // Agar main PAWN hu, to board seedha rakho
     if (myPieceType === 'king') {
-        boardContainer.style.transform = "rotate(180deg)";
+        boardContainer.style.transform = "rotate(0deg)";
         // Text ko wapas seedha karna padega taaki ulta na dikhe
         document.querySelectorAll('text').forEach(t => {
             t.style.transformBox = "fill-box";
             t.style.transformOrigin = "center";
-            t.style.transform = "rotate(180deg)";
+            t.style.transform = "rotate(0deg)";
         });
     } else {
         boardContainer.style.transform = "rotate(0deg)";
