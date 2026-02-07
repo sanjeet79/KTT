@@ -99,8 +99,8 @@ onValue(roomRef, (snapshot) => {
         const oldTurn = currentGameState.currentTurn;
         
         if (oldTurn !== data.currentTurn) {
-             if (oldPawns > newPawns) killSound.play().catch(()=>{});
-             else moveSound.play().catch(()=>{});
+            if (oldPawns > newPawns) killSound.play().catch(()=>{});
+            else moveSound.play().catch(()=>{});
         }
     }
 
@@ -188,12 +188,12 @@ function updateStatusUI(data) {
     // Turn Indicator
     if (data.currentTurn === myPieceType) {
         isMyTurn = true;
-        turnEl.textContent = "🟢 YOUR TURN";
+        turnEl.textContent = "🟢 Your Ture";
         turnEl.style.color = "#4ade80";
         if("vibrate" in navigator) navigator.vibrate(50);
     } else {
         isMyTurn = false;
-        turnEl.textContent = "🔴 WAITING...";
+        turnEl.textContent = "🔴 WAIT...";
         turnEl.style.color = "#f87171";
     }
 
@@ -205,10 +205,10 @@ function updateStatusUI(data) {
     const k1Safe = getValidKingMoves(data.kingPositions.king1, data).length > 0;
     const k2Safe = getValidKingMoves(data.kingPositions.king2, data).length > 0;
     
-    k1StatusEl.textContent = k1Safe ? "SAFE" : "BLOCKED";
+    k1StatusEl.textContent = k1Safe ? "SAFE" : "Block";
     k1StatusEl.className = `status-value ${k1Safe ? "safe" : "blocked"}`;
     
-    k2StatusEl.textContent = k2Safe ? "SAFE" : "BLOCKED";
+    k2StatusEl.textContent = k2Safe ? "SAFE" : "Block";
     k2StatusEl.className = `status-value ${k2Safe ? "safe" : "blocked"}`;
 }
 
@@ -242,7 +242,7 @@ function handleBoardClick(clickedPos) {
     if (!currentGameState || currentGameState.winner) return;
     
     if (!isMyTurn) {
-        showToast("⏳ Wait for opponent!");
+        showToast("! opponent");
         return;
     }
 
@@ -301,64 +301,84 @@ function executeMove(from, to, type) {
     // Update Firebase (Server)
     update(ref(db, `rooms/${roomID}/board`), data);
 }
+// ==========================================
+// 8. HELPERS & VALIDATION (FIXED)
+// ==========================================
 
-// ==========================================
-// 8. HELPERS & VALIDATION
-// ==========================================
+// 🔥 1. Define Valid Diagonal Paths (Jahan Line bani hai wahi chalega)
+const VALID_NEIGHBORS = new Set([
+    // Main Diagonal 1 (A1 to E5)
+    "A1-B2","B2-A1", "B2-C3","C3-B2", "C3-D4","D4-C3", "D4-E5","E5-D4",
+    // Main Diagonal 2 (E1 to A5)
+    "E1-D2","D2-E1", "D2-C3","C3-D2", "C3-B4","B4-C3", "B4-A5","A5-B4",
+    // Diamond Top-Left
+    "C1-B2","B2-C1", "B2-A3","A3-B2",
+    // Diamond Top-Right
+    "C1-D2","D2-C1", "D2-E3","E3-D2",
+    // Diamond Bottom-Left
+    "A3-B4","B4-A3", "B4-C5","C5-B4",
+    // Diamond Bottom-Right
+    "E3-D4","D4-E3", "D4-C5","C5-D4"
+]);
+
 function getCoords(p) { 
     const c = cols.indexOf(p[0]), r = parseInt(p[1])-1;
     return {x: c*size, y: r*size};
 }
 
 function validateMove(from, to, type) {
+    // 1. Target Occupied?
     if (currentGameState.pawnStacks[to] > 0 || Object.values(currentGameState.kingPositions).includes(to)) return false; 
     
-    if (type === 'pawn') return isOneStep(from, to);
-    
-    // King Logic
+    // 2. Simple One Step Move (Strict Line Check)
     if (isOneStep(from, to)) return true;
-    const mid = getMidPoint(from, to);
-    return (mid && currentGameState.pawnStacks[mid] > 0);
+    
+    // 3. King Jump Logic
+    if (type === 'king') {
+        const mid = getMidPoint(from, to);
+        // Jump tabhi valid hai agar:
+        // a) Mid point exist karta ho
+        // b) Mid point par Pawn ho
+        // c) Path VALID LINE ke upar ho (Important!)
+        if (mid && currentGameState.pawnStacks[mid] > 0) {
+             return isOneStep(from, mid) && isOneStep(mid, to);
+        }
+    }
+    return false;
 }
 
+// 🔥 FIX: Check ki kya Diagonal Move Valid Line par hai?
 function isOneStep(f, t) {
     const fc = cols.indexOf(f[0]), fr = parseInt(f[1]);
     const tc = cols.indexOf(t[0]), tr = parseInt(t[1]);
     const dc = Math.abs(fc - tc), dr = Math.abs(fr - tr);
-    return (dc <= 1 && dr <= 1 && (dc+dr) > 0);
+
+    // Same spot check
+    if (dc === 0 && dr === 0) return false;
+
+    // 1. Horizontal/Vertical (Ye hamesha allowed hote hain)
+    if ((dc === 0 && dr === 1) || (dc === 1 && dr === 0)) return true;
+
+    // 2. Diagonal (Sirf tab allowed jab VALID_NEIGHBORS mein ho)
+    if (dc === 1 && dr === 1) {
+        return VALID_NEIGHBORS.has(`${f}-${t}`) || VALID_NEIGHBORS.has(`${t}-${f}`);
+    }
+
+    return false;
 }
 
 function getMidPoint(f, t) {
     const fc = cols.indexOf(f[0]), fr = parseInt(f[1]);
     const tc = cols.indexOf(t[0]), tr = parseInt(t[1]);
+    
+    // Jump distance must be 2
     if (Math.abs(fc-tc) > 2 || Math.abs(fr-tr) > 2) return null;
+    
     const mc = (fc + tc) / 2, mr = (fr + tr) / 2;
     return (Number.isInteger(mc) && Number.isInteger(mr)) ? `${cols[mc]}${mr}` : null;
 }
 
-function getValidKingMoves(pos, data) {
-    if(!pos) return [];
-    let moves = [];
-    const fc = cols.indexOf(pos[0]), fr = parseInt(pos[1]);
-    for(let r=fr-2; r<=fr+2; r++) for(let c=fc-2; c<=fc+2; c++) {
-        const t = `${cols[c]}${r}`;
-        if(c>=0 && c<5 && r>=1 && r<=5 && pos!==t) {
-             if (data.pawnStacks[t] || Object.values(data.kingPositions).includes(t)) continue;
-             if (isOneStep(pos, t)) moves.push(t);
-             else {
-                 const mid = getMidPoint(pos, t);
-                 if(mid && data.pawnStacks[mid]) moves.push(t);
-             }
-        }
-    }
-    return moves;
-}
 
-function countPawns(data) {
-    let total = 0;
-    for(let k in data.pawnStacks) total += data.pawnStacks[k];
-    return total;
-}
 
 // ==========================================
 // 9. WIN LOGIC & EVENTS
