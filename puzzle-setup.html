@@ -1,0 +1,363 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Puzzle Setup | Trap The King</title>
+    
+    <style>
+        /* --- GLOBAL RESET --- */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            user-select: none; /* No text selection */
+        }
+
+        body {
+            background-color: #0f172a; /* Dark Blue/Black */
+            color: white;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            overflow: hidden; /* Prevent body scroll */
+        }
+
+        .main-container {
+            width: 100%;
+            max-width: 800px;
+            padding: 10px;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            padding-left: 20px;
+        }
+
+        /* --- TITLE --- */
+        .title {
+            width: 100%;
+            background-color: black;
+            padding: 2px;
+            border-radius: 15px;
+        }
+
+        .page-title {
+            text-align: center;
+            font-size: 1.6rem;
+            background: linear-gradient(90deg, #4ade80, #3b82f6);
+            background-clip: text;
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            text-shadow: 0 0 20px rgba(74, 222, 128, 0.3);
+            margin-bottom: 5px;
+        }
+
+        /* --- LAYOUT WRAPPER (Flexbox) --- */
+        .layer-wrapper {
+            display: flex;
+            align-items: center;
+            height: 70px; /* Fixed height for the strip */
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 15px;
+            overflow: hidden; /* Hide overflow outside rounded corners */
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.5);
+        }
+
+        /* --- 1. STATIC BOX (Role) --- */
+        .role-box {
+            width: 130px; /* Fixed width */
+            height: 100%; /* Full height of wrapper */
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            flex-shrink: 0; /* Prevent shrinking */
+            z-index: 10;
+            box-shadow: 5px 0 15px rgba(0, 0, 0, 0.5); /* Shadow over scrolling part */
+            cursor: default;
+        }
+
+        .role-box .icon {
+            font-size: 1.5rem;
+            margin-bottom: 2px;
+        }
+
+        .role-box .text {
+            font-size: 0.80rem;
+            font-weight: 800;
+            text-align: center;
+            line-height: 1.2;
+        }
+
+        /* Theme Colors */
+        .pawn-theme {
+            background: linear-gradient(135deg, #14532d, #166534);
+            border-right: 2px solid #4ade80;
+        }
+
+        .king-theme {
+            background: linear-gradient(135deg, #831843, #9d174d);
+            border-right: 2px solid #f472b6;
+        }
+
+        /* --- 2. SCROLLING CONTAINER --- */
+        .scroll-container {
+            flex-grow: 1; /* Take remaining space */
+            display: flex;
+            overflow-x: auto; /* Horizontal Scroll */
+            height: 100%;
+            align-items: center;
+            padding: 0 15px;
+            gap: 12px;
+            scroll-behavior: smooth;
+
+            /* Hide Scrollbar */
+            -ms-overflow-style: none; /* IE and Edge */
+            scrollbar-width: none; /* Firefox */
+        }
+
+        /* Hide scrollbar for Chrome/Safari */
+        .scroll-container::-webkit-scrollbar {
+            display: none;
+        }
+
+        /* --- LEVEL BOXES --- */
+        .level-box {
+            min-width: 100px;
+            height: 50px; /* Smaller than container */
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 10px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            font-size: 0.8rem;
+            font-weight: 600;
+            color: #ccc;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            border: 1px solid transparent;
+            padding: 5px;
+        }
+
+        .level-box:hover {
+            transform: scale(1.05);
+            color: white;
+            background: rgba(255, 255, 255, 0.2);
+            border-color: rgba(255, 255, 255, 0.5);
+        }
+
+        /* Specific Colors for Difficulties (Optional Gradients) */
+        .lvl-Beginners { border-bottom: 3px solid #a3e635; }
+        .lvl-Easy { border-bottom: 3px solid #4ade80; }
+        .lvl-Medium { border-bottom: 3px solid #22d3ee; }
+        .lvl-Hard { border-bottom: 3px solid #60a5fa; }
+        .lvl-Advance { border-bottom: 3px solid #818cf8; }
+        .lvl-Expert { border-bottom: 3px solid #c084fc; }
+        .lvl-Pro { border-bottom: 3px solid #e879f9; }
+        .lvl-Master { border-bottom: 3px solid #f472b6; }
+        .lvl-ProMaster { border-bottom: 3px solid #fb7185; }
+        .lvl-Legend {
+            background: linear-gradient(45deg, #f59e0b, #d97706);
+            color: black;
+            font-weight: bold;
+            box-shadow: 0 0 10px #f59e0b;
+            border: none;
+        }
+
+        /* --- SELECTED LEVEL HIGHLIGHT --- */
+        .level-box.selected {
+            background: linear-gradient(135deg, #f59e0b, #d97706); /* Orange/Gold highlight */
+            color: black;
+            transform: scale(1.15); /* Thoda bada dikhega */
+            border: 2px solid white;
+            box-shadow: 0 0 20px rgba(245, 158, 11, 0.6);
+            z-index: 100;
+        }
+
+        /* --- START BUTTON STYLES --- */
+        .action-area {
+            margin-top: 5px;
+            display: flex;
+            justify-content: center;
+            width: 100%;
+        }
+
+        .start-btn {
+            padding: 10px 100px;
+            font-size: 1.2rem;
+            font-weight: 900;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            border: none;
+            border-radius: 50px;
+            background: #334155; /* Default Disabled Color (Greyish) */
+            color: #94a3b8;
+            cursor: not-allowed;
+            transition: all 0.4s ease;
+            box-shadow: none;
+        }
+
+        /* Jab Button Active Hoga */
+        .start-btn.active {
+            background: linear-gradient(45deg, #4ade80, #22c55e); /* Bright Green */
+            color: #003300;
+            cursor: pointer;
+            box-shadow: 0 0 30px rgba(74, 222, 128, 0.5);
+            transform: translateY(-2px);
+        }
+
+        .start-btn.active:hover {
+            transform: scale(1.05) translateY(-4px);
+            box-shadow: 0 10px 40px rgba(74, 222, 128, 0.7);
+        }
+
+        .close-btn {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            background: black;
+            border: none;
+            color: red;
+            font-size: 22px;
+            width: 35px;
+            height: 35px;
+            border-radius: 50%;
+            cursor: pointer;
+            display: flex;
+            font-weight: bold;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.2s;
+            z-index: 10;
+        }
+
+        .close-btn:hover {
+            background: red;
+            color: white;
+        }
+    </style>
+</head>
+<body>
+
+    <audio id="bgMusic" loop>
+        <source src="music/background.mp3" type="audio/mpeg">
+    </audio>
+
+    <div class="main-container">
+        <div class="title">
+            <h2 class="page-title">🧩 Solve Puzzle's</h2>
+        </div>
+
+        <div class="layer-wrapper">
+            <div class="role-box pawn-theme">
+                <span class="icon">♟️</span>
+                <span class="text">PLAY AS<br>PAWN</span>
+            </div>
+            <div class="scroll-container" id="pawn-levels"></div>
+        </div>
+
+        <div class="layer-wrapper">
+            <div class="role-box king-theme">
+                <span class="icon">👑</span>
+                <span class="text">PLAY AS<br>KING</span>
+            </div>
+            <div class="scroll-container" id="king-levels"></div>
+        </div>
+        
+        <div class="action-area">
+            <button id="startBtn" class="start-btn" disabled>START BATTLE ⚔️</button>
+        </div>
+    </div>
+
+    <div class="close">
+        <button onclick="window.location.href='index.html'" class="close-btn">✕</button>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+
+            // 1. Difficulty Levels
+            const levels = [
+                "Beginners", "Easy", "Medium", "Hard", "Advance",
+                "Expert", "Pro", "Master", "Pro Master", "Legend"
+            ];
+
+            // Selected Config Variable
+            let selectedConfig = {
+                role: null,
+                levelName: null
+            };
+
+            const startBtn = document.getElementById('startBtn');
+
+            // 2. Function to Create Boxes
+            function createLevelBoxes(containerId, role) {
+                const container = document.getElementById(containerId);
+
+                levels.forEach((levelName) => {
+                    const box = document.createElement('div');
+                    // Clean class name
+                    const className = `lvl-${levelName.replace(/\s+/g, '')}`;
+                    box.className = `level-box ${className}`;
+                    box.textContent = levelName;
+
+                    // 🔥 FIXED CLICK EVENT (Handle Selection call karega)
+                    box.addEventListener('click', () => {
+                        handleSelection(box, role, levelName);
+                    });
+
+                    container.appendChild(box);
+                });
+            }
+
+            // 3. SELECTION HANDLE FUNCTION
+            function handleSelection(clickedBox, role, levelName) {
+                // Reset old selection
+                document.querySelectorAll('.level-box').forEach(b => b.classList.remove('selected'));
+
+                // Highlight new box
+                clickedBox.classList.add('selected');
+
+                // Save Data
+                selectedConfig.role = role;
+                selectedConfig.levelName = levelName;
+
+                // Enable Button
+                startBtn.disabled = false;
+                startBtn.classList.add('active');
+            }
+
+            // 4. START BUTTON CLICK
+            startBtn.addEventListener('click', () => {
+                if (!selectedConfig.levelName) return;
+
+                // Redirect to GAME PUZZLE HTML
+                window.location.href = `game-puzzle.html?role=${selectedConfig.role}&level=${encodeURIComponent(selectedConfig.levelName)}`;
+            });
+
+            // Generate Boxes
+            createLevelBoxes('pawn-levels', 'pawn');
+            createLevelBoxes('king-levels', 'king');
+        });
+    </script>
+
+    <script>
+        document.addEventListener("DOMContentLoaded", function() {
+            const bgMusic = document.getElementById('bgMusic');
+            const savedSound = localStorage.getItem('gameSound');
+            if (savedSound !== 'off') {
+                bgMusic.play().catch(() => {});
+                document.addEventListener('click', () => bgMusic.play(), {
+                    once: true
+                });
+            }
+        });
+    </script>
+</body>
+</html>

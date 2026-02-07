@@ -1,0 +1,551 @@
+
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+html, body {
+    touch-action: none;
+    overscroll-behavior: none;
+    height: 100dvh;
+}
+
+body {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    background: linear-gradient(rgba(0, 0, 0, 0.7), rgba(74, 66, 66, 0.7)), url('bg2.jpeg') center/cover no-repeat;
+    margin: 0;
+    overflow: hidden;
+    font-family: -apple-system, BlinkMacSystemFont, sans-serif;
+     transition: transform 0.8s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+body, svg, text {
+    user-select: none;
+    -webkit-user-select: none;
+    -ms-user-select: none;
+}
+
+
+/* Rotate Warning */
+#rotateWarning {
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.95);
+    color: white;
+    display: none;
+    align-items: center;
+    justify-content: center;
+    font-size: clamp(18px, 5vw, 24px);
+    z-index: 10000;
+    flex-direction: column;
+    gap: 10px;
+}
+
+/* Status Container */
+.status-container {
+    position: fixed;
+    top: 15px;
+    left: 15px;
+    background: rgba(0,0,0,0.9);
+    backdrop-filter: blur(5px);
+    border-radius: 16px;
+    padding: 15px 19px;
+    border: 2px solid rgba(255,255,255,0.2);
+    box-shadow: 0 12px 40px rgba(0,0,0,0.6);
+    font-size: 14px;
+    min-width: 160px;
+    z-index: 100;
+}
+
+.status-row {
+    display: flex;
+    justify-content: space-between;
+    margin: 8px 0;
+    color: white;
+    font-weight: 600;
+}
+
+.status-label { 
+    color: orange; 
+    font-size: 15px;
+}
+
+.status-value { 
+    font-weight: bold; 
+    font-size: 16px;
+    text-shadow: 0 2px 4px rgba(0,0,0,0.8);
+}
+
+.safe { color: #4ade80 !important; }
+.blocked { color: #f87171 !important; }
+
+
+/* 🔥 TOGGLE SWITCH CSS */
+.switch {
+    position: relative;
+    display: inline-block;
+    width: 34px;
+    height: 18px;
+}
+
+.switch input { 
+    opacity: 0; 
+    width: 0; 
+    height: 0; 
+}
+
+.slider {
+    position: absolute;
+    cursor: pointer;
+    top: 0; left: 0; right: 0; bottom: 0;
+    background-color: #ccc;
+    transition: .4s;
+    border-radius: 34px;
+}
+
+.slider:before {
+    position: absolute;
+    content: "";
+    height: 12px;
+    width: 12px;
+    left: 3px;
+    bottom: 3px;
+    background-color: white;
+    transition: .4s;
+    border-radius: 50%;
+}
+
+input:checked + .slider {
+    background-color: #4ade80;
+}
+
+input:checked + .slider:before {
+    transform: translateX(16px);
+}
+
+
+/* =========================================
+   🏆 GAME OVER MODAL (PREMIUM STYLE)
+   ========================================= */
+
+/* 1. Background Overlay (Glass Effect) */
+.modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.7); /* Dark Dim Background */
+    backdrop-filter: blur(12px);     /* Strong Blur Effect */
+    -webkit-backdrop-filter: blur(12px);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 20000; /* Sabse upar */
+    animation: fadeInOverlay 0.3s ease-out;
+}
+
+/* 2. The Main Card (Box) */
+.win-card {
+    background: linear-gradient(145deg, #1a1a2e, #16213e); /* Dark Blue Gradient */
+    border: 1px solid rgba(255, 255, 255, 0.1); /* Subtle Border */
+    border-radius: 24px;
+    padding: 40px 30px;
+    text-align: center;
+    width: 90%;
+    max-width: 380px;
+    
+    /* Glow Shadow (Script se color change hoga, ye default hai) */
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
+    
+    /* Pop-up Animation */
+    transform: scale(0.8);
+    opacity: 0;
+    animation: popInCard 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+}
+
+/* 3. Icon Styling (🏆) */
+.win-icon {
+    font-size: 70px;
+    margin-bottom: 15px;
+    display: inline-block;
+    filter: drop-shadow(0 0 20px rgba(255, 215, 0, 0.6)); /* Gold Glow */
+    animation: bounceIcon 1s infinite alternate;
+}
+
+/* 4. Title Text (Winner Name) */
+.win-card h2 {
+    font-size: 32px;
+    margin: 0 0 10px 0;
+    text-transform: uppercase;
+    letter-spacing: 2px;
+    font-weight: 900;
+    
+    /* Gradient Text Logic */
+    background: -webkit-linear-gradient(#fff, #aaa); /* Gradient color */
+    
+    -webkit-background-clip: text;  /* 🔥 Spelling Fixed Here */
+    background-clip: text;          /* Standard version bhi add karein */
+    
+    -webkit-text-fill-color: transparent; /* Text ko transparent karein taaki background dikhe */
+    color: transparent; /* Fallback */
+}
+
+/* 5. Message Text */
+.win-card p {
+    color: #a0a0c0; /* Soft Blue-Grey */
+    font-size: 16px;
+    margin-bottom: 30px;
+    line-height: 1.5;
+}
+
+/* 6. Buttons Container */
+.win-buttons {
+    display: flex;
+    gap: 15px;
+    justify-content: center;
+}
+
+/* 7. Restart Button (Green Gradient) */
+.restart-btn {
+    flex: 1;
+    padding: 14px;
+    border: none;
+    border-radius: 12px;
+    background: linear-gradient(45deg, #4ade80, #22c55e);
+    color: #003300;
+    font-weight: 800;
+    font-size: 16px;
+    cursor: pointer;
+    box-shadow: 0 5px 15px rgba(74, 222, 128, 0.3);
+    transition: transform 0.2s, box-shadow 0.2s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+}
+
+.restart-btn:active {
+    transform: scale(0.95);
+    box-shadow: 0 2px 10px rgba(74, 222, 128, 0.2);
+}
+
+/* 8. Home Button (Transparent) */
+.home-btn {
+    padding: 14px 20px;
+    border: 2px solid rgba(255, 255, 255, 0.1);
+    border-radius: 12px;
+    background: rgba(255, 255, 255, 0.05);
+    color: white;
+    font-weight: 600;
+    font-size: 16px;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.home-btn:hover {
+    background: rgba(255, 255, 255, 0.1);
+    border-color: rgba(255, 255, 255, 0.3);
+}
+
+.home-btn:active {
+    transform: scale(0.95);
+}
+
+/* =========================================
+   🎥 ANIMATIONS
+   ========================================= */
+
+@keyframes fadeInOverlay {
+    from { opacity: 0; }
+    to { opacity: 1; }
+}
+
+@keyframes popInCard {
+    from { 
+        opacity: 0; 
+        transform: scale(0.5) translateY(20px); 
+    }
+    to { 
+        opacity: 1; 
+        transform: scale(1) translateY(0); 
+    }
+}
+
+@keyframes bounceIcon {
+    from { transform: translateY(0); }
+    to { transform: translateY(-10px); }
+}
+
+/* MAIN GAME CONTAINER */
+.game-container {
+    width: 100%;
+    height: 100dvh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 10px;
+    gap: 15px;
+}
+
+/* SCENE - SVG Container */
+.scene {
+    flex: 1;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    width: 100%;
+    max-width: 400px;
+    padding: 20px;
+}
+
+/* BOARD - Perfect Scalable */
+.board {
+    width: 100%;
+    height: 100%;
+    max-width: 95vw;
+    max-height: 70vh;
+    aspect-ratio: 1 / 1;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    transition: transform 0.8s cubic-bezier(0.4, 0, 0.2, 1);
+}
+    .board-rotated {
+    transform: rotate(180deg);
+}
+
+
+/* SVG Perfect Scaling */
+#board {
+    width: 100%;
+    height: 100%;
+    max-width: 360px;
+    max-height: 360px;
+    aspect-ratio: 1 / 1;
+    background: url('bg4.jpg') center/cover;
+    box-shadow: 0 25px 50px rgba(0,0,0,0.8);
+    border-radius: 20px;
+    border: 3px solid rgba(255,255,255,0.1);
+    text-shadow: 1px 1px 2px rgba(155, 9, 9, 0.8);
+}
+
+
+
+
+/* Point Labels */
+.point-label {
+    fill: #333;
+    font-weight: bold;
+    font-size: 18px;
+    pointer-events: none;
+    text-shadow: 1px 1px 2px rgba(255,255,255,0.8);
+}
+
+/* Controls */
+.controls {
+    position: fixed;
+    top: 8px;
+    right: 10px;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    z-index: 999;
+    padding: 5px;
+    border-radius: 10px;
+    backdrop-filter: blur(0px);
+    border: 1px solid rgba(255,255,255,0.1);
+}
+
+.controls button {
+    width: 75px;
+    height: 35px;
+    font-size: 11px;
+    font-weight: bold;
+    border-radius: 10px;
+    border: none;
+    background: linear-gradient(145deg, rgba(0,0,0,0.9), rgba(40,40,40,0.9));
+    color: white;
+    cursor: pointer;
+    touch-action: manipulation;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.4);
+    transition: all 0.2s ease;
+}
+
+.controls button:active {
+    transform: scale(0.95);
+    box-shadow: 0 2px 8px rgba(0,0,0,0.6);
+}
+.close-btn{
+   background: none !important;
+   color:red !important;
+}
+
+/* Moving Piece */
+.moving-piece {
+    z-index: 9999 !important;
+    filter: drop-shadow(0 4px 12px rgba(0,0,0,0.7));
+}
+
+.moving-piece text {
+    filter: drop-shadow(0 3px 6px rgba(0,0,0,0.6));
+    transform-origin: center;
+}
+
+/* ABOUT MODAL */
+.modal-overlay {
+    position: fixed;
+    top: 0; left: 0; right: 0; bottom: 0;
+    background: rgba(0,0,0,0.92);
+    backdrop-filter: blur(5px);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 10000;
+    animation: fadeIn 0.3s ease;
+}
+
+.modal-content {
+    background: linear-gradient(145deg, #1a1a1a, #2d2d2d);
+    border-radius: 24px;
+    padding: 0;
+    max-width: 95vw;
+    max-height: 90vh;
+    width: 520px;
+    box-shadow: 0 25px 70px rgba(0,0,0,0.9);
+    border: 2px solid rgba(255,255,255,0.15);
+    overflow: hidden;
+}
+
+.modal-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 25px 30px;
+    border-bottom: 1px solid rgba(255,255,255,0.1);
+    background: linear-gradient(90deg, #1a1a1a, #2d2d2d);
+}
+
+.modal-header h2 {
+    margin: 0;
+    color: #4ade80;
+    font-size: 26px;
+    font-weight: 800;
+    text-shadow: 0 2px 8px rgba(0,0,0,0.7);
+}
+
+.close-btn {
+    background: rgba(255,0,0,0.8);
+    border: none;
+    color: white;
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    font-size: 20px;
+    font-weight: bold;
+    cursor: pointer;
+    transition: all 0.2s;
+    box-shadow: 0 4px 12px rgba(255,0,0,0.4);
+}
+
+.close-btn:active {
+    transform: scale(0.9);
+    background: #ef4444;
+}
+
+.modal-body {
+    padding: 20px;
+    max-height: 60vh;
+    overflow-y: auto;
+    color: white;
+    font-size: 16px;
+    line-height: 1.6;
+}
+
+.modal-body h3 {
+    color: #4ade80;
+    margin: 20px 0 12px 0;
+    font-size: 18px;
+}
+
+.modal-body p, .modal-body li {
+    margin: 10px 0;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; transform: scale(0.95); }
+    to { opacity: 1; transform: scale(1); }
+}
+
+/* Helper Highlights */
+.helper-highlight {
+    fill: rgba(0, 255, 0, 0.4) !important;
+    stroke: #00ff00 !important;
+    stroke-width: 2 !important;
+    filter: drop-shadow(0 0 12px rgba(0,255,0,0.7));
+}
+
+.helper-off {
+    background: rgba(255,0,0,0.7) !important;
+}
+
+.helper-on {
+    background: rgba(0,255,0,0.7) !important;
+    animation: pulse 1.5s infinite;
+}
+
+@keyframes pulse {
+    0%, 100% { box-shadow: 0 0 12px rgba(0,255,0,0.8); }
+    50% { box-shadow: 0 0 25px rgba(0,255,0,1); }
+}
+
+/* MOBILE LANDSCAPE - Address Bar Fix */
+@media (orientation: landscape) {
+    .board {
+        max-height: 100%;
+        width:auto;
+    }
+
+    .scene {
+        padding: 0;
+        height: 100%;
+    }
+
+    
+    .status-container {
+        top: 10px;
+        left: 10px;
+        font-size: 12px;
+        padding: 12px 16px;
+        min-width: 140px;
+    }
+}
+
+/* TABLET */
+@media (max-width: 768px) and (min-width: 500px) {
+    #board {
+        max-width: 380px;
+        max-height: 380px;
+    }
+}
+
+/* DESKTOP */
+@media (min-width: 1024px) {
+    .game-container {
+        max-width: 500px;
+        padding: 20px;
+    }
+    
+    #board {
+        max-width: 400px;
+        max-height: 400px;
+    }
+}
+
+

@@ -1,0 +1,202 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Online Multiplayer | Trap The King</title>
+    <style>
+        /* --- GLOBAL STYLES --- */
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Segoe UI', sans-serif; user-select: none; }
+        body { background-color: #0f172a; color: white; display: flex; justify-content: center; align-items: center; min-height: 100vh; overflow: hidden; }
+        
+        .main-container {
+            width: 100%; max-width: 500px; padding: 20px;
+            display: flex; flex-direction: column; gap: 20px;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 20px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+        }
+
+        .title { text-align: center; margin-bottom: 10px; }
+        .page-title {
+            font-size: 1.8rem; text-transform: uppercase; letter-spacing: 2px;
+            background: linear-gradient(90deg, #f472b6, #c084fc);
+            -webkit-background-clip: text;
+            background-clip: text;         -webkit-text-fill-color: transparent;
+        }
+        .subtitle { font-size: 0.9rem; color: #94a3b8; margin-top: 5px; }
+
+        /* --- TABS --- */
+        .tab-container { display: flex; background: rgba(0,0,0,0.3); border-radius: 50px; padding: 5px; }
+        .tab-btn {
+            flex: 1; padding: 12px; border: none; border-radius: 40px;
+            background: transparent; color: #94a3b8; font-weight: bold; cursor: pointer; transition: 0.3s;
+        }
+        .tab-btn.active { background: #3b82f6; color: white; box-shadow: 0 4px 15px rgba(59, 130, 246, 0.4); }
+
+        /* --- CONTENT --- */
+        .content-box { text-align: center; padding: 20px 10px; min-height: 180px; display: flex; flex-direction: column; justify-content: center; align-items: center; }
+        .hidden { display: none !important; }
+
+        input {
+            width: 100%; padding: 15px; border-radius: 12px; border: 2px solid #334155;
+            background: #1e293b; color: white; font-size: 1.2rem; text-align: center; letter-spacing: 3px;
+            margin-bottom: 15px; outline: none; transition: 0.3s;
+        }
+        input:focus { border-color: #3b82f6; box-shadow: 0 0 15px rgba(59, 130, 246, 0.3); }
+
+        .action-btn {
+            width: 100%; padding: 15px; border: none; border-radius: 12px;
+            font-size: 1.1rem; font-weight: bold; cursor: pointer; transition: 0.3s; text-transform: uppercase;
+        }
+        .btn-create { background: linear-gradient(45deg, #10b981, #059669); color: white; }
+        .btn-join { background: linear-gradient(45deg, #3b82f6, #2563eb); color: white; }
+        .btn-create:hover, .btn-join:hover { transform: scale(1.02); opacity: 0.9; }
+
+        .close-btn {
+            position: absolute; top: 15px; right: 15px;
+            background: rgba(255,255,255,0.1); border: none; color: white;
+            width: 35px; height: 35px; border-radius: 50%; cursor: pointer;
+            font-size: 18px; display: flex; align-items: center; justify-content: center;
+        }
+        .close-btn:hover { background: #ff4444; }
+
+        #statusText { margin-top: 15px; font-size: 0.9rem; color: #fbbf24; min-height: 20px; }
+    </style>
+</head>
+<body>
+
+    <button onclick="window.location.href='index.html'" class="close-btn">✕</button>
+
+    <div class="main-container">
+        <div class="title">
+            <h2 class="page-title">🌐 Online Room</h2>
+            <p class="subtitle">Play with friends anywhere!</p>
+        </div>
+
+        <div class="tab-container">
+            <button id="tabCreate" class="tab-btn active">Create Room</button>
+            <button id="tabJoin" class="tab-btn">Join Room</button>
+        </div>
+
+        <div id="createSection" class="content-box">
+            <p style="color: #ccc; margin-bottom: 20px;">Host a game and share the code.</p>
+            <button id="createBtn" class="action-btn btn-create">GENERATE ROOM CODE 🎲</button>
+        </div>
+
+        <div id="joinSection" class="content-box hidden">
+            <p style="color: #ccc; margin-bottom: 20px;">Enter your friend's room code.</p>
+            <input type="text" id="roomInput" placeholder="ENTER CODE" maxlength="6">
+            <button id="joinBtn" class="action-btn btn-join">JOIN GAME 🚀</button>
+        </div>
+
+        <p id="statusText"></p>
+    </div>
+
+    <script type="module">
+        // Import Firebase from CDN (No installation needed)
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.2.0/firebase-app.js";
+        import { getDatabase, ref, set, get, child } from "https://www.gstatic.com/firebasejs/11.2.0/firebase-database.js";
+
+        // YOUR CONFIGURATION
+        const firebaseConfig = {
+            apiKey: "AIzaSyAXORFD8QNwVgPw38_wgqZd3U21oTJ4z1w",
+            authDomain: "trap-the-king.firebaseapp.com",
+            databaseURL: "https://trap-the-king-default-rtdb.firebaseio.com",
+            projectId: "trap-the-king",
+            storageBucket: "trap-the-king.firebasestorage.app",
+            messagingSenderId: "279741214015",
+            appId: "1:279741214015:web:d7418a7ceaf57deaf0378a",
+            measurementId: "G-5ZF0F5RJ1C"
+        };
+
+        // Initialize Firebase
+        const app = initializeApp(firebaseConfig);
+        const db = getDatabase(app);
+
+        // --- TAB SWITCHING LOGIC ---
+        const tabCreate = document.getElementById('tabCreate');
+        const tabJoin = document.getElementById('tabJoin');
+        const secCreate = document.getElementById('createSection');
+        const secJoin = document.getElementById('joinSection');
+        const statusText = document.getElementById('statusText');
+
+        function switchTab(mode) {
+            statusText.textContent = "";
+            if(mode === 'create') {
+                tabCreate.classList.add('active'); tabJoin.classList.remove('active');
+                secCreate.classList.remove('hidden'); secJoin.classList.add('hidden');
+            } else {
+                tabCreate.classList.remove('active'); tabJoin.classList.add('active');
+                secCreate.classList.add('hidden'); secJoin.classList.remove('hidden');
+            }
+        }
+        tabCreate.onclick = () => switchTab('create');
+        tabJoin.onclick = () => switchTab('join');
+
+        // --- CREATE ROOM LOGIC ---
+        document.getElementById('createBtn').addEventListener('click', () => {
+            const btn = document.getElementById('createBtn');
+            btn.disabled = true; 
+            btn.innerHTML = "Creating... ⏳";
+            statusText.textContent = "Connecting to Server...";
+
+            // 1. Generate Random ID (4 Digits)
+            const roomId = Math.floor(1000 + Math.random() * 9000).toString();
+
+            // 2. Save to Firebase
+            // Hum 'rooms/ROOM_ID' mein data save karenge
+            set(ref(db, 'rooms/' + roomId), {
+                status: 'waiting',     // Game shuru nahi hua
+                host: 'connected',     // Host aa gaya
+                createdAt: Date.now()  // Kab bana
+            }).then(() => {
+                // Success! Go to Game Page as HOST
+                window.location.href = `game-online.html?room=${roomId}&role=host`;
+            }).catch((error) => {
+                console.error(error);
+                statusText.textContent = "❌ Error: Could not create room.";
+                btn.innerHTML = "TRY AGAIN";
+                btn.disabled = false;
+            });
+        });
+
+        // --- JOIN ROOM LOGIC ---
+        document.getElementById('joinBtn').addEventListener('click', () => {
+            const code = document.getElementById('roomInput').value;
+            if(code.length < 4) {
+                statusText.textContent = "⚠️ Enter a valid 4-digit code!";
+                return;
+            }
+
+            const btn = document.getElementById('joinBtn');
+            btn.disabled = true;
+            btn.innerHTML = "Checking... 🔍";
+
+            // 1. Check if Room Exists in Firebase
+            const dbRef = ref(db);
+            get(child(dbRef, `rooms/${code}`)).then((snapshot) => {
+                if (snapshot.exists()) {
+                    // Room Mil Gaya!
+                    statusText.textContent = "✅ Room Found! Joining...";
+                    // Go to Game Page as GUEST
+                    setTimeout(() => {
+                        window.location.href = `game-online.html?room=${code}&role=guest`;
+                    }, 1000);
+                } else {
+                    // Room Nahi Mila
+                    statusText.textContent = "❌ Room not found. Check code.";
+                    btn.innerHTML = "JOIN GAME 🚀";
+                    btn.disabled = false;
+                }
+            }).catch((error) => {
+                console.error(error);
+                statusText.textContent = "❌ Connection Error.";
+                btn.disabled = false;
+            });
+        });
+
+    </script>
+</body>
+</html>

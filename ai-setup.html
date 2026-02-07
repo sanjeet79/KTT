@@ -1,0 +1,255 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, shrink-to-fit=no">
+    <title>Game Setup</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+        html { touch-action: manipulation; -webkit-text-size-adjust: 100%; }
+        
+        body {
+            background: linear-gradient(rgba(0, 0, 0, 0.6), rgba(0, 0, 0, 0.7)), url('x2.jpeg') center/cover no-repeat;
+            background-attachment: fixed;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            font-family: -apple-system, BlinkMacSystemFont, sans-serif;
+            color: white;
+            user-select: none;
+            overflow: hidden;
+        }
+
+        /* --- CONTAINER --- */
+        .container {
+            background: rgba(20, 20, 35, 0.85);
+            backdrop-filter: blur(15px);
+            -webkit-backdrop-filter: blur(15px);
+            padding: 25px;
+            border-radius: 20px;
+            border: 1px solid rgba(255, 255, 255, 0.15);
+            width: 90%;
+            max-width: 450px;
+            box-shadow: 0 25px 60px rgba(0,0,0,0.6);
+            display: flex;
+            flex-direction: column;
+            align-items: stretch;
+        }
+
+        /* Heading Hata diya - Direct Section Title Styling */
+        .section-title {
+            font-size: 0.9rem; color: #aaa; margin-bottom: 10px;
+            text-transform: uppercase; font-weight: 700; letter-spacing: 1px;
+            text-align: center;
+        }
+        
+        /* Pehle title ke liye thoda margin adjust */
+        .section-title:first-child { margin-top: 5px; }
+
+        .option-row {
+            display: flex; gap: 10px; margin-bottom: 20px;
+        }
+
+        .option-card {
+            flex: 1;
+            background: rgba(255, 255, 255, 0.05);
+            border: 2px solid rgba(255, 255, 255, 0.1);
+            border-radius: 12px;
+            padding: 10px 5px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            position: relative;
+        }
+
+        .option-card:active { transform: scale(0.95); }
+
+        .option-card.selected {
+            border-color: #4ade80;
+            background: rgba(74, 222, 128, 0.15);
+            box-shadow: 0 0 15px rgba(74, 222, 128, 0.2);
+        }
+
+        .icon { font-size: 1.8rem; margin-bottom: 5px; display: block; filter: drop-shadow(0 2px 4px rgba(0,0,0,0.5)); }
+        .label { font-size: 0.9rem; font-weight: 600; display: block; }
+
+        .play-btn {
+            width: 100%; padding: 14px;
+            background: linear-gradient(45deg, #4ade80, #22c55e);
+            border: none; border-radius: 12px;
+            color: #003600; font-size: 1.1rem; font-weight: 800;
+            cursor: pointer; opacity: 0.6; pointer-events: none;
+            transition: all 0.3s; box-shadow: 0 5px 20px rgba(74, 222, 128, 0.1);
+            text-transform: uppercase; letter-spacing: 1px;
+        }
+
+        .play-btn.active { opacity: 1; pointer-events: auto; transform: translateY(-2px); box-shadow: 0 10px 30px rgba(74, 222, 128, 0.4); }
+        .play-btn:active { transform: scale(0.98); }
+
+        .container {
+    position: relative; /* Ensure absolute positioning works relative to this */
+    /* ... existing styles ... */
+}
+
+.close-btn {
+    position: absolute;
+    top: 15px;
+    right: 15px;
+    background: rgba(255, 255, 255, 0.1);
+    border: none;
+    color: red;
+    font-size: 18px;
+    width: 32px;
+    height: 32px;
+    font-weight:bold;
+    border-radius: 50%;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s;
+    z-index: 10;
+}
+
+.close-btn:hover {
+    background: red;
+    color: white;
+}
+
+        /* --- MOBILE LANDSCAPE OPTIMIZATION --- */
+        @media (max-height: 500px) and (orientation: landscape) {
+            body { padding: 5px; }
+            .container {
+                padding: 10px 20px; /* Padding kam kiya */
+                max-width: 480px;
+            }
+            /* Spacing kam ki taaki fit aaye */
+            .section-title { font-size: 0.8rem; margin-bottom: 5px; }
+            .option-row { margin-bottom: 8px; gap: 8px; }
+            .option-card { padding: 5px; border-radius: 8px; }
+            .icon { font-size: 1.4rem; margin-bottom: 0; }
+            .label { font-size: 0.8rem; }
+            .play-btn { padding: 10px; font-size: 1rem; margin-top: 5px; }
+        }
+
+        /* Landscape Warning */
+        .landscape-warning {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: #0f0f23; z-index: 9999; display: none;
+            flex-direction: column; align-items: center; justify-content: center;
+            color: #4ade80; text-align: center;
+        }
+        @media (orientation: portrait) {
+            .landscape-warning { display: flex !important; } 
+            .container { display: none !important; }
+        }
+    </style>
+</head>
+<body>
+    
+    <audio id="bgMusic" loop>
+        <source src="music/background.mp3" type="audio/mpeg">
+    </audio>
+
+    <div class="landscape-warning">
+        <div style="font-size: 50px; margin-bottom: 20px;">🔄</div>
+        <div style="font-size: 24px; font-weight: bold;">PLEASE ROTATE YOUR DEVICE</div>
+    </div>
+
+    <div class="container">
+        <div class="section-title">Choose Your Fighter</div>
+        <div class="option-row" id="roleRow">
+            <div class="option-card" onclick="selectRole('pawn', this)">
+                <span class="icon">♟️</span>
+                <span class="label">Pawn</span>
+            </div>
+            <div class="option-card" onclick="selectRole('king', this)">
+                <span class="icon">♚</span>
+                <span class="label">King</span>
+            </div>
+        </div>
+
+        <div class="section-title">Difficulty Level</div>
+        <div class="option-row" id="diffRow">
+            <div class="option-card" onclick="selectDiff('easy', this)">
+                <span class="icon">😴</span>
+                <span class="label">Easy</span>
+            </div>
+            <div class="option-card" onclick="selectDiff('medium', this)">
+                <span class="icon">⚡</span>
+                <span class="label">Mid</span>
+            </div>
+            <div class="option-card" onclick="selectDiff('hard', this)">
+                <span class="icon">🧠</span>
+                <span class="label">Hard</span>
+            </div>
+        </div>
+
+        <button id="playBtn" class="play-btn">START BATTLE</button>
+        <button class="close-btn" onclick="goHome()">✕</button>
+    </div>
+
+    <script>
+        document.addEventListener('dblclick', (e) => e.preventDefault(), { passive: false });
+
+        let selectedRole = null;
+        let selectedDiff = null;
+        const playBtn = document.getElementById('playBtn');
+
+        function vibrate() {
+            if (navigator.vibrate) navigator.vibrate(20);
+        }
+
+        function selectRole(role, element) {
+            vibrate();
+            selectedRole = role;
+            updateSelection('roleRow', element);
+            checkReady();
+        }
+
+        function selectDiff(diff, element) {
+            vibrate();
+            selectedDiff = diff;
+            updateSelection('diffRow', element);
+            checkReady();
+        }
+
+        function updateSelection(rowId, element) {
+            const cards = document.getElementById(rowId).children;
+            for(let card of cards) card.classList.remove('selected');
+            element.classList.add('selected');
+        }
+
+        function checkReady() {
+            if (selectedRole && selectedDiff) {
+                playBtn.classList.add('active');
+            }
+        }
+
+        playBtn.addEventListener('click', () => {
+            if (selectedRole && selectedDiff) {
+                vibrate();
+                playBtn.style.transform = "scale(0.95)";
+                setTimeout(() => {
+                    window.location.href = `game-ai.html?role=${selectedRole}&diff=${selectedDiff}`;
+                }, 100);
+            }
+        });
+
+        document.addEventListener("DOMContentLoaded", function() {
+            const bgMusic = document.getElementById('bgMusic');
+            const savedSound = localStorage.getItem('gameSound');
+            if (savedSound !== 'off') {
+                bgMusic.play().catch(()=>{});
+                document.addEventListener('click', () => bgMusic.play(), { once: true });
+            }
+        });
+
+        function goHome() {
+    window.location.href = 'index.html';
+}
+    </script>
+</body>
+</html>

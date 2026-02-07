@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta name="viewport" content="width=device-width, height=device-height initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta charset="UTF-8">
+<title>Trap The King</title>
+<link rel="stylesheet" href="style-ai.css">
+</head>
+<body>
+    <div class="game-container">
+    <div id="rotateWarning">
+ 🔄 Please rotate your phone
+</div>
+
+<div id="statusContainer" class="status-container">
+    <div class="status-row" style="border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 5px; margin-bottom: 5px;">
+        <span class="status-label">Turn:</span>
+        <span id="turnIndicator" class="status-value" style="color: #fbbf24;">Loading...</span>
+    </div>
+
+    <div class="status-row" style="border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 5px; margin-bottom: 5px;">
+        <span class="status-label">⏳ Moves:</span>
+        <span id="moveCount" class="status-value" style="color: cyan; font-size: 18px;">100</span>
+    </div>
+
+    <div class="status-row">
+        <span class="status-label">♟️ Pawns:</span>
+        <span id="pawnCount" class="status-value">20</span>
+    </div>
+
+    <div class="status-row">
+        <span class="status-label">👑 King1:</span>
+        <span id="king1Status" class="status-value">SAFE</span>
+    </div>
+    <div class="status-row">
+        <span class="status-label">👑 King2:</span>
+        <span id="king2Status" class="status-value">SAFE</span>
+    </div>
+</div>
+
+<div class="scene">
+    <div class="board">
+        <svg id="board" viewBox="-60 -60 575 575">
+            <!-- GRID (unchanged) -->
+            <!--Vertical Line-->
+            <g stroke="#0f1111" stroke-width="2.5" style="pointer-events: none;"></g>
+            <g stroke="#0f1111" stroke-width="2.5">
+                <line x1="0" y1="0" x2="0" y2="472"/>
+                <line x1="118" y1="0" x2="118" y2="472"/>
+                <line x1="236" y1="0" x2="236" y2="472"/>
+                <line x1="354" y1="0" x2="354" y2="472"/>
+                <line x1="472" y1="0" x2="472" y2="472"/>
+            <!--Vertical Line-->
+                <line x1="0" y1="0" x2="472" y2="0"/>
+                <line x1="0" y1="118" x2="472" y2="118"/>
+                <line x1="0" y1="236" x2="472" y2="236"/>
+                <line x1="0" y1="354" x2="472" y2="354"/>
+                <line x1="0" y1="472" x2="472" y2="472"/>
+                <!-- Diagonals Line -->
+                <line x1="0" y1="0" x2="472" y2="472"/>
+                <line x1="472" y1="0" x2="0" y2="472"/>
+                <line x1="236" y1="0" x2="0" y2="236"/>
+                <line x1="0" y1="236" x2="236" y2="472"/>
+                <line x1="236" y1="0" x2="472" y2="236"/>
+                <line x1="472" y1="236" x2="236" y2="472"/>
+            </g>
+            <g id="aiMoveGroup" style="pointer-events: none;"></g>
+
+            <g id="points"></g>
+
+            <g id="pieces" style="pointer-events: none;"></g>
+            
+        </svg>
+    </div>
+</div>
+
+
+
+<div class="controls">
+<button class="close-btn" onclick="goHome()">✕ Close</button>
+<button id="undoBtn">⟲ Undo</button>
+<button id="redoBtn">⟳ Redo</button>
+<button id="resetBtn">🔄 Reset</button>
+<button id="helperBtn">🎯 Helper</button>
+<button id="soundBtn">🔊Sound</button>
+</div>
+<div id="gameOverModal" class="modal-overlay" style="display: none;">
+    <div class="win-card">
+        <div class="win-icon" id="winIcon">🏆</div>
+        <h2 id="winTitle">GAME OVER</h2>
+        <p id="winMessage">King Wins the game!</p>
+        
+        <div class="win-buttons">
+            <button onclick="location.reload()" class="restart-btn">🔄 Play Again</button>
+            <button onclick="window.location.href='index.html'" class="home-btn">🏠 Home</button>
+        </div>
+    </div>
+</div>
+<script>function goHome() {
+    window.location.href = 'index.html';
+}
+</script>
+
+<script src="script-ai.js"></script>
+</body>
+</html>
